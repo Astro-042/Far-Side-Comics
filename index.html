@@ -1,0 +1,145 @@
+import React, { useState } from 'react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
+import { Camera } from 'lucide-react';
+
+const ComicGenerator = () => {
+  const [plot, setPlot] = useState('');
+  const [scene, setScene] = useState('');
+  const [caption, setCaption] = useState('');
+  const [generatedSVG, setGeneratedSVG] = useState('');
+
+  const generateComic = () => {
+    // Base SVG template
+    const svg = `
+      <svg viewBox="0 0 500 400" xmlns="http://www.w3.org/2000/svg">
+        <!-- Gradients -->
+        <defs>
+          <linearGradient id="skyGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#6BA5D7;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#B9D9EB;stop-opacity:1" />
+          </linearGradient>
+          <linearGradient id="grassGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+            <stop offset="0%" style="stop-color:#567d46;stop-opacity:1" />
+            <stop offset="100%" style="stop-color:#4a6b3d;stop-opacity:1" />
+          </linearGradient>
+        </defs>
+
+        <!-- Background -->
+        <rect width="500" height="400" fill="url(#skyGradient)"/>
+        <rect width="500" height="150" y="250" fill="url(#grassGradient)"/>
+
+        <!-- Simple scene elements -->
+        <g transform="translate(250, 200)">
+          ${generateSceneElements()}
+        </g>
+
+        <!-- Speech Bubble -->
+        <g transform="translate(250, 100)">
+          ${generateSpeechBubble(caption)}
+        </g>
+      </svg>
+    `;
+
+    setGeneratedSVG(svg);
+  };
+
+  const generateSceneElements = () => {
+    // Basic scene element generation based on scene description
+    // This is a simplified version - could be expanded with more complex scene parsing
+    return `
+      <!-- Basic character -->
+      <circle cx="0" cy="0" r="30" fill="#F5F5F5" stroke="#2c2c2c" stroke-width="2"/>
+      <circle cx="-15" cy="-15" r="10" fill="#F5F5F5" stroke="#2c2c2c" stroke-width="2"/>
+    `;
+  };
+
+  const generateSpeechBubble = (text) => {
+    return `
+      <path d="M-100 -20 Q-80 -20 -70 -30 L-60 -40 Q-50 -50 -30 -50 L60 -50 Q80 -50 80 -30 L80 -10 Q80 10 60 10 L-30 10 Q-50 10 -60 0 L-70 -10 Q-80 -20 -100 -20"
+            fill="#FFFFFF" stroke="#2c2c2c" stroke-width="2"/>
+      <text x="0" y="-20" text-anchor="middle" font-family="Georgia" font-size="12" fill="#333">${text}</text>
+    `;
+  };
+
+  const downloadSVG = () => {
+    const blob = new Blob([generatedSVG], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'comic.svg';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <Card>
+        <CardHeader>
+          <CardTitle>Far Side Style Comic Generator</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-6">
+            <div>
+              <Label htmlFor="plot">Plot</Label>
+              <Textarea
+                id="plot"
+                placeholder="Enter the main plot of your comic..."
+                value={plot}
+                onChange={(e) => setPlot(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="scene">Scene Description</Label>
+              <Textarea
+                id="scene"
+                placeholder="Describe the visual scene (characters, setting, etc.)..."
+                value={scene}
+                onChange={(e) => setScene(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="caption">Caption</Label>
+              <Textarea
+                id="caption"
+                placeholder="Enter the caption or dialogue..."
+                value={caption}
+                onChange={(e) => setCaption(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+
+            <div className="flex space-x-4">
+              <Button onClick={generateComic} className="flex items-center">
+                <Camera className="mr-2 h-4 w-4" />
+                Generate Comic
+              </Button>
+              {generatedSVG && (
+                <Button onClick={downloadSVG} variant="outline">
+                  Download SVG
+                </Button>
+              )}
+            </div>
+
+            {generatedSVG && (
+              <div className="mt-6 border rounded-lg p-4">
+                <div dangerouslySetInnerHTML={{ __html: generatedSVG }} 
+                     className="w-full h-96 bg-white"/>
+              </div>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
+  );
+};
+
+export default ComicGenerator;
